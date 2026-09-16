@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: 16 185 129; /* emerald, overridden by settings */
+}
+
+.dark {
+  --bg: 8 10 14;
+  --surface: 15 18 24;
+  --surface2: 20 24 32;
+  --border: 32 37 48;
+  --muted: 148 157 176;
+}
+
+.light {
+  --bg: 246 247 249;
+  --surface: 255 255 255;
+  --surface2: 248 249 251;
+  --border: 226 229 235;
+  --muted: 100 107 122;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+body {
+  background: rgb(var(--bg));
+  color: white;
+}
+
+.light body,
+.light {
+  color: rgb(15 18 24);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 8px;
+}
+
+.compact .p-card {
+  padding: 12px;
+}
+.comfortable .p-card {
+  padding: 20px;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}

@@ -20,10 +20,11 @@ const CHIME_FREQS: Record<Settings['soundChoice'], number[]> = {
   digital: [440, 440],
 }
 
-function playSound(choice: Settings['soundChoice']) {
+function playSound(choice: Settings['soundChoice'], volume: number) {
   try {
     const ctx = new AudioContext()
     const freqs = CHIME_FREQS[choice]
+    const level = Math.max(0, Math.min(1, volume / 100)) * 0.25
     freqs.forEach((f, i) => {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
@@ -31,7 +32,7 @@ function playSound(choice: Settings['soundChoice']) {
       osc.connect(gain)
       gain.connect(ctx.destination)
       const start = ctx.currentTime + i * 0.15
-      gain.gain.setValueAtTime(0.15, start)
+      gain.gain.setValueAtTime(level, start)
       gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3)
       osc.start(start)
       osc.stop(start + 0.3)
@@ -70,7 +71,7 @@ export function useTimer(
     const id = setInterval(tick, 250)
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.isRunning, state.endTimestamp])
+  }, [state.isRunning, state.endTimestamp, state.remainingSeconds])
 
   useEffect(() => {
     if (stateRef.current.isRunning) return
@@ -87,7 +88,7 @@ export function useTimer(
     const minutes = durationFor(cur.mode, settings) / 60
     const type: SessionType = cur.mode
     if (natural) onSessionCompleteRef.current(type, minutes, true)
-    if (natural && settings.soundEnabled) playSound(settings.soundChoice)
+    if (natural && settings.soundEnabled) playSound(settings.soundChoice, settings.soundVolume)
     if (natural && settings.notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('Studia', {
         body: type === 'focus' ? 'Focus session complete. Time for a break.' : 'Break over. Ready to focus?',
@@ -133,6 +134,12 @@ export function useTimer(
     setState({ ...state, mode, isRunning: false, endTimestamp: null, remainingSeconds: dur })
   }
 
+  /** Jump straight into a fresh focus session (used by planner / task start flows). */
+  function startFreshFocus() {
+    const dur = durationFor('focus', settings)
+    setState({ mode: 'focus', cycleCount: state.cycleCount, isRunning: true, endTimestamp: Date.now() + dur * 1000, remainingSeconds: dur })
+  }
+
   const total = durationFor(state.mode, settings)
   return {
     mode: state.mode,
@@ -145,5 +152,6 @@ export function useTimer(
     reset,
     skip,
     switchMode,
+    startFreshFocus,
   }
 }

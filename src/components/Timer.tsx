@@ -1,5 +1,5 @@
-import { Play, Pause, RotateCcw, SkipForward, Coffee, BedDouble, Timer as TimerIcon, Plus, BookOpen, Maximize2 } from 'lucide-react'
-import type { Subject, TimerMode } from '../types'
+import { Play, Pause, RotateCcw, SkipForward, Coffee, BedDouble, Timer as TimerIcon, Plus, BookOpen, Maximize2, Zap } from 'lucide-react'
+import type { StudyTemplate, Subject, TimerMode } from '../types'
 import { formatClock, classNames } from '../lib/utils'
 import type { useTimer } from '../lib/useTimer'
 
@@ -9,7 +9,7 @@ const MODE_META: Record<TimerMode, { label: string; sub: string; icon: typeof Ti
   'long-break': { label: 'Long Break', sub: 'Take a longer rest', icon: BedDouble },
 }
 
-export function Timer({ timer, subjects = [], subjectId = '', onSubjectChange, onAddSubject, onManageSubjects, onOpenFocus }: { timer: ReturnType<typeof useTimer>; subjects?: Subject[]; subjectId?: string; onSubjectChange?: (id: string) => void; onAddSubject?: () => void; onManageSubjects?: () => void; onOpenFocus?: () => void }) {
+export function Timer({ timer, subjects = [], subjectId = '', onSubjectChange, onAddSubject, onManageSubjects, onOpenFocus, activeTemplate, templates = [], onTemplateChange }: { timer: ReturnType<typeof useTimer>; subjects?: Subject[]; subjectId?: string; onSubjectChange?: (id: string) => void; onAddSubject?: () => void; onManageSubjects?: () => void; onOpenFocus?: () => void; activeTemplate?: StudyTemplate; templates?: StudyTemplate[]; onTemplateChange?: (id: string) => void }) {
   const r = 120
   const c = 2 * Math.PI * r
   const offset = c * (1 - timer.progress)
@@ -18,6 +18,15 @@ export function Timer({ timer, subjects = [], subjectId = '', onSubjectChange, o
   return (
     <div className="p-card rounded-2xl border border-border bg-surface p-6">
       <div className="mb-4 flex flex-wrap items-center gap-2"><label className="text-xs text-muted" htmlFor="timer-subject">Subject</label><select id="timer-subject" value={subjectId} onChange={(e) => onSubjectChange?.(e.target.value)} className="focus-ring min-w-0 flex-1 rounded-lg border border-border bg-surface2 px-2 py-1.5 text-xs"><option value="">General focus</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select>{onAddSubject && <button onClick={onAddSubject} title="Add subject" className="focus-ring rounded-lg border border-border p-1.5 text-muted hover:text-accent"><Plus size={14} /></button>}{onManageSubjects && <button onClick={onManageSubjects} title="Manage subjects" className="focus-ring rounded-lg border border-border p-1.5 text-muted hover:text-accent"><BookOpen size={14} /></button>}</div>
+      {templates.length > 0 && onTemplateChange && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-1.5 text-xs text-muted" htmlFor="timer-template"><Zap size={12} className="text-accent" /> Template</label>
+          <select id="timer-template" value={activeTemplate?.id ?? ''} onChange={(e) => onTemplateChange(e.target.value)} title="Switching templates resets the paused timer to the new durations" className="focus-ring min-w-0 flex-1 rounded-lg border border-border bg-surface2 px-2 py-1.5 text-xs">
+            {templates.map((t) => <option key={t.id} value={t.id}>{t.name} · {t.focusMinutes}/{t.shortBreakMinutes}</option>)}
+          </select>
+          {activeTemplate && <span className="text-[11px] text-muted">{activeTemplate.sessions}× focus</span>}
+        </div>
+      )}
       <div className="mb-6 flex rounded-xl bg-surface2 p-1 text-sm">
         {(['focus', 'short-break', 'long-break'] as TimerMode[]).map((m) => {
           const Icon = MODE_META[m].icon

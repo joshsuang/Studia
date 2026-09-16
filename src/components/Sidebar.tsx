@@ -5,6 +5,7 @@ import {
   Clock,
   Calendar,
   BarChart3,
+  CalendarClock,
   FileText,
   Settings as SettingsIcon,
   Sun,
@@ -17,6 +18,7 @@ import { classNames } from '../lib/utils'
 const NAV: { id: Page; label: string; icon: typeof Home }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'tasks', label: 'Tasks', icon: Clock },
+  { id: 'planner', label: 'Planner', icon: CalendarClock },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
   { id: 'notes', label: 'Notes', icon: FileText },
   { id: 'analytics', label: 'Statistics', icon: BarChart3 },

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Plus, Pencil, Trash2, Search, Play } from 'lucide-react'
 import type { Goal, Priority, Task } from '../types'
 import { uid } from '../lib/storage'
@@ -35,6 +35,12 @@ export function StudyPlan({
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Task | null>(null)
   const [toDelete, setToDelete] = useState<Task | null>(null)
+
+  useEffect(() => {
+    const open = () => { setEditing(null); setModalOpen(true) }
+    window.addEventListener('studia:add-task', open)
+    return () => window.removeEventListener('studia:add-task', open)
+  }, [])
 
   const today = new Date().toISOString().slice(0, 10)
 

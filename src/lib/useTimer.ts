@@ -53,6 +53,8 @@ export function useTimer(
   )
   const stateRef = useRef(state)
   stateRef.current = state
+  const onSessionCompleteRef = useRef(onSessionComplete)
+  onSessionCompleteRef.current = onSessionComplete
 
   useEffect(() => {
     if (!state.isRunning || !state.endTimestamp) {
@@ -84,7 +86,7 @@ export function useTimer(
     const cur = stateRef.current
     const minutes = durationFor(cur.mode, settings) / 60
     const type: SessionType = cur.mode
-    if (natural) onSessionComplete(type, minutes, true)
+    if (natural) onSessionCompleteRef.current(type, minutes, true)
     if (natural && settings.soundEnabled) playSound(settings.soundChoice)
     if (natural && settings.notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('Studia', {

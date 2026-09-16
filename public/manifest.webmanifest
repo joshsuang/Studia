@@ -1,0 +1,10 @@
+{
+  "name": "Studia",
+  "short_name": "Studia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080a0e",
+  "theme_color": "#10b981",
+  "description": "A focused study timer and productivity workspace.",
+  "icons": [{ "src": "/studia-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

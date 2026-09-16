@@ -1,5 +1,5 @@
-import { Play, Pause, RotateCcw, SkipForward, Coffee, BedDouble, Timer as TimerIcon } from 'lucide-react'
-import type { TimerMode } from '../types'
+import { Play, Pause, RotateCcw, SkipForward, Coffee, BedDouble, Timer as TimerIcon, Plus } from 'lucide-react'
+import type { Subject, TimerMode } from '../types'
 import { formatClock, classNames } from '../lib/utils'
 import type { useTimer } from '../lib/useTimer'
 
@@ -9,7 +9,7 @@ const MODE_META: Record<TimerMode, { label: string; sub: string; icon: typeof Ti
   'long-break': { label: 'Long Break', sub: 'Take a longer rest', icon: BedDouble },
 }
 
-export function Timer({ timer }: { timer: ReturnType<typeof useTimer> }) {
+export function Timer({ timer, subjects = [], subjectId = '', onSubjectChange, onAddSubject }: { timer: ReturnType<typeof useTimer>; subjects?: Subject[]; subjectId?: string; onSubjectChange?: (id: string) => void; onAddSubject?: () => void }) {
   const r = 120
   const c = 2 * Math.PI * r
   const offset = c * (1 - timer.progress)
@@ -17,6 +17,7 @@ export function Timer({ timer }: { timer: ReturnType<typeof useTimer> }) {
 
   return (
     <div className="p-card rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-4 flex flex-wrap items-center gap-2"><label className="text-xs text-muted" htmlFor="timer-subject">Subject</label><select id="timer-subject" value={subjectId} onChange={(e) => onSubjectChange?.(e.target.value)} className="focus-ring min-w-0 flex-1 rounded-lg border border-border bg-surface2 px-2 py-1.5 text-xs"><option value="">General focus</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select>{onAddSubject && <button onClick={onAddSubject} title="Add subject" className="focus-ring rounded-lg border border-border p-1.5 text-muted hover:text-accent"><Plus size={14} /></button>}</div>
       <div className="mb-6 flex rounded-xl bg-surface2 p-1 text-sm">
         {(['focus', 'short-break', 'long-break'] as TimerMode[]).map((m) => {
           const Icon = MODE_META[m].icon

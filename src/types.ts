@@ -3,6 +3,36 @@ export type SessionType = 'focus' | 'short-break' | 'long-break'
 export type TimerMode = 'focus' | 'short-break' | 'long-break'
 export type Page = 'dashboard' | 'sessions' | 'calendar' | 'analytics' | 'goals' | 'settings'
 
+export interface Subject {
+  id: string
+  name: string
+  color: string
+  createdAt: string
+}
+
+export interface DailyGoal {
+  minutes: number
+  updatedAt: string
+}
+
+export interface Exam {
+  id: string
+  name: string
+  date: string
+  subjectId: string | null
+  createdAt: string
+}
+
+export interface PlannedSession {
+  id: string
+  date: string
+  time: string
+  durationMinutes: number
+  subjectId: string | null
+  taskId: string | null
+  completed: boolean
+}
+
 export interface Task {
   id: string
   title: string
@@ -22,6 +52,7 @@ export interface StudySession {
   type: SessionType
   taskId: string | null
   subject: string
+  subjectId?: string | null
   durationMinutes: number
   startedAt: string
   completedAt: string

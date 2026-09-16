@@ -48,7 +48,7 @@ export function uid() {
 }
 
 export function exportAllData() {
-  const keys = ['tasks', 'sessions', 'goals', 'events', 'settings', 'timer']
+  const keys = ['tasks', 'sessions', 'goals', 'events', 'settings', 'timer', 'subjects', 'daily-goal', 'exams', 'planned-sessions']
   const data: Record<string, unknown> = {}
   for (const k of keys) data[k] = load(k, null)
   return JSON.stringify(data, null, 2)
@@ -62,6 +62,6 @@ export function importAllData(json: string) {
 }
 
 export function resetAllData() {
-  const keys = ['tasks', 'sessions', 'goals', 'events', 'settings', 'timer']
+  const keys = ['tasks', 'sessions', 'goals', 'events', 'settings', 'timer', 'subjects', 'daily-goal', 'exams', 'planned-sessions']
   for (const k of keys) localStorage.removeItem(PREFIX + k)
 }

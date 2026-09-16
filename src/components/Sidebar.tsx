@@ -46,7 +46,7 @@ export function Sidebar({
 
   function handleMouseEnter() {
     cancelExpansion()
-    expandTimer.current = setTimeout(() => setExpanded(true), 600)
+    expandTimer.current = setTimeout(() => setExpanded(true), 900)
   }
 
   function handleMouseLeave() {

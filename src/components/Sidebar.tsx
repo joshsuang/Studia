@@ -5,7 +5,9 @@ import {
   Clock,
   Calendar,
   BarChart3,
-  Target,
+  BookOpen,
+  FileText,
+  Maximize2,
   Settings as SettingsIcon,
   Sun,
   Moon,
@@ -16,10 +18,12 @@ import { classNames } from '../lib/utils'
 
 const NAV: { id: Page; label: string; icon: typeof Home }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
-  { id: 'sessions', label: 'Sessions', icon: Clock },
+  { id: 'tasks', label: 'Tasks', icon: Clock },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'goals', label: 'Goals', icon: Target },
+  { id: 'subjects', label: 'Subjects', icon: BookOpen },
+  { id: 'notes', label: 'Notes', icon: FileText },
+  { id: 'analytics', label: 'Statistics', icon: BarChart3 },
+  { id: 'focus', label: 'Focus', icon: Maximize2 },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ]
 
@@ -134,7 +138,7 @@ export function Sidebar({
 
 export function MobileNav({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-border bg-surface px-1 py-2 md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-start gap-1 overflow-x-auto border-t border-border bg-surface px-1 py-2 md:hidden">
       {NAV.map((item) => {
         const Icon = item.icon
         const active = page === item.id
@@ -143,7 +147,7 @@ export function MobileNav({ page, onNavigate }: { page: Page; onNavigate: (p: Pa
             key={item.id}
             onClick={() => onNavigate(item.id)}
             className={classNames(
-              'focus-ring flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1 text-[10px]',
+              'focus-ring flex min-w-[64px] flex-1 flex-col items-center gap-0.5 rounded-lg py-1 text-[10px]',
               active ? 'text-accent' : 'text-muted'
             )}
           >

@@ -1,12 +1,22 @@
 export type Priority = 'low' | 'medium' | 'high'
 export type SessionType = 'focus' | 'short-break' | 'long-break'
 export type TimerMode = 'focus' | 'short-break' | 'long-break'
-export type Page = 'dashboard' | 'sessions' | 'calendar' | 'analytics' | 'goals' | 'settings'
+export type Page = 'dashboard' | 'tasks' | 'sessions' | 'calendar' | 'subjects' | 'notes' | 'analytics' | 'focus' | 'goals' | 'settings'
 
 export interface Subject {
   id: string
   name: string
   color: string
+  icon: string
+  createdAt: string
+}
+
+export interface Note {
+  id: string
+  title: string
+  body: string
+  subjectId: string | null
+  updatedAt: string
   createdAt: string
 }
 
@@ -20,6 +30,7 @@ export interface Exam {
   name: string
   date: string
   subjectId: string | null
+  description?: string
   createdAt: string
 }
 

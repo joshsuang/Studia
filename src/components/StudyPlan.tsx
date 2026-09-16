@@ -20,6 +20,7 @@ export function StudyPlan({
   onStartTask,
   title = "Today's Study Plan",
   scope = 'today',
+  view = 'all',
 }: {
   tasks: Task[]
   setTasks: (fn: (prev: Task[]) => Task[]) => void
@@ -27,6 +28,7 @@ export function StudyPlan({
   onStartTask?: (task: Task) => void
   title?: string
   scope?: 'today' | 'all'
+  view?: 'today' | 'upcoming' | 'completed' | 'all'
 }) {
   const toast = useToast()
   const [query, setQuery] = useState('')
@@ -45,7 +47,13 @@ export function StudyPlan({
   const today = new Date().toISOString().slice(0, 10)
 
   const visible = useMemo(() => {
-    let list = tasks.filter((t) => (scope === 'today' ? t.dueDate === today || !t.dueDate : true))
+    let list = tasks.filter((t) => {
+      if (scope === 'today' && !(t.dueDate === today || !t.dueDate)) return false
+      if (view === 'today' && !(t.dueDate === today || !t.dueDate)) return false
+      if (view === 'upcoming' && !(t.dueDate && t.dueDate > today)) return false
+      if (view === 'completed' && !t.completed) return false
+      return true
+    })
     if (query.trim()) list = list.filter((t) => t.title.toLowerCase().includes(query.toLowerCase()) || t.subject.toLowerCase().includes(query.toLowerCase()))
     if (filter === 'active') list = list.filter((t) => !t.completed)
     if (filter === 'completed') list = list.filter((t) => t.completed)
@@ -57,7 +65,7 @@ export function StudyPlan({
       return (a.scheduledTime ?? '99:99').localeCompare(b.scheduledTime ?? '99:99')
     })
     return list
-  }, [tasks, query, filter, sort, scope, today])
+  }, [tasks, query, filter, sort, scope, view, today])
 
   function saveTask(data: {
     title: string

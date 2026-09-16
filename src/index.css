@@ -36,6 +36,14 @@ body {
   color: rgb(15 18 24);
 }
 
+.light .text-white {
+  color: rgb(15 18 24);
+}
+
+.light .hover\\:text-white:hover {
+  color: rgb(15 18 24);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

@@ -70,6 +70,16 @@ export function useTimer(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isRunning, state.endTimestamp])
 
+  useEffect(() => {
+    if (stateRef.current.isRunning) return
+    const duration = durationFor(stateRef.current.mode, settings)
+    setState((current) => current.remainingSeconds === duration ? current : {
+      ...current,
+      endTimestamp: null,
+      remainingSeconds: duration,
+    })
+  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, setState])
+
   function finish(natural: boolean) {
     const cur = stateRef.current
     const minutes = durationFor(cur.mode, settings) / 60

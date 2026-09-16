@@ -100,7 +100,55 @@ function NumberSetting({ label, value, onChange }: { label: string; value: numbe
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) { return <label className="flex items-center justify-between py-3 text-sm"><span>{label}</span><button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)} className={`relative h-6 w-11 rounded-full ${checked ? 'bg-accent' : 'bg-surface2'}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-white ${checked ? 'left-6' : 'left-1'}`} /></button></label> }
 function SelectSetting({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) { return <label className="flex items-center justify-between py-3 text-sm"><span>{label}</span><select value={value} onChange={(e) => onChange(e.target.value)} className="rounded-lg border border-border bg-surface2 px-2 py-1.5 capitalize">{options.map((o) => <option key={o}>{o}</option>)}</select></label> }
 
-function CommandPalette({ timer, navigate, close, addSubject }: { timer: ReturnType<typeof useTimer>; navigate: (p: Page) => void; close: () => void; addSubject: () => void }) { const [query, setQuery] = useState(''); const commands = [{ label: timer.isRunning ? 'Pause timer' : 'Start timer', shortcut: 'Space', run: () => timer.isRunning ? timer.pause() : timer.start() }, { label: 'Reset timer', shortcut: 'R', run: timer.reset }, { label: 'Skip session', shortcut: 'S', run: timer.skip }, { label: 'Add task', shortcut: 'N', run: () => { navigate('dashboard'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('studia:add-task')), 0) } }, { label: 'View dashboard', shortcut: 'T', run: () => navigate('dashboard') }, { label: 'View session history', shortcut: '—', run: () => navigate('sessions') }, { label: 'View statistics', shortcut: '—', run: () => navigate('analytics') }, { label: 'Open settings', shortcut: '—', run: () => navigate('settings') }, { label: 'Add subject', shortcut: '—', run: addSubject }].filter((c) => c.label.toLowerCase().includes(query.toLowerCase())); return <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-[12vh]" onClick={close}><div className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl" onClick={(e) => e.stopPropagation()}><div className="flex items-center gap-2 border-b border-border px-4"><Search size={17} className="text-muted" /><input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search commands…" className="focus-ring w-full bg-transparent py-4 text-sm outline-none" /></div><div className="p-2">{commands.map((command) => <button key={command.label} onClick={() => { command.run(); close() }} className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm hover:bg-surface2"><span>{command.label}</span><kbd className="ml-4 min-w-14 rounded-md border border-border bg-surface2 px-2 py-1 text-center text-[11px] font-medium text-muted" aria-label={`Shortcut: ${command.shortcut}`}>{command.shortcut}</kbd></button>)}{!commands.length && <p className="p-3 text-sm text-muted">No matching commands.</p>}</div></div></div> }
+function CommandPalette({ timer, navigate, close, addSubject }: { timer: ReturnType<typeof useTimer>; navigate: (p: Page) => void; close: () => void; addSubject: () => void }) {
+  const [query, setQuery] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const commands = [
+    { label: timer.isRunning ? 'Pause timer' : 'Start timer', shortcut: 'Space', run: () => timer.isRunning ? timer.pause() : timer.start() },
+    { label: 'Reset timer', shortcut: 'R', run: timer.reset },
+    { label: 'Skip session', shortcut: 'S', run: timer.skip },
+    { label: 'Add task', shortcut: 'N', run: () => { navigate('dashboard'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('studia:add-task')), 0) } },
+    { label: 'View dashboard', shortcut: 'T', run: () => navigate('dashboard') },
+    { label: 'View session history', shortcut: '—', run: () => navigate('sessions') },
+    { label: 'View statistics', shortcut: '—', run: () => navigate('analytics') },
+    { label: 'Open settings', shortcut: '—', run: () => navigate('settings') },
+    { label: 'Add subject', shortcut: '—', run: addSubject },
+  ]
+  const filteredCommands = commands.filter((command) => command.label.toLowerCase().includes(query.toLowerCase()))
+
+  useEffect(() => setSelectedIndex(0), [query])
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setSelectedIndex((index) => filteredCommands.length ? (index + 1) % filteredCommands.length : 0)
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        setSelectedIndex((index) => filteredCommands.length ? (index - 1 + filteredCommands.length) % filteredCommands.length : 0)
+      } else if (event.key === 'Enter' && filteredCommands[selectedIndex]) {
+        event.preventDefault()
+        filteredCommands[selectedIndex].run()
+        close()
+      } else if (event.key === 'Escape') {
+        event.preventDefault()
+        close()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [close, filteredCommands, selectedIndex])
+
+  return <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-[12vh]" onClick={close}>
+    <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl" onClick={(event) => event.stopPropagation()}>
+      <div className="flex items-center gap-2 border-b border-border px-4"><Search size={17} className="text-muted" /><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search commands…" className="focus-ring w-full bg-transparent py-4 text-sm outline-none" /></div>
+      <div className="p-2" role="listbox" aria-label="Commands">
+        {filteredCommands.map((command, index) => <button key={command.label} onMouseEnter={() => setSelectedIndex(index)} onClick={() => { command.run(); close() }} role="option" aria-selected={index === selectedIndex} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm ${index === selectedIndex ? 'bg-surface2 text-white' : 'text-muted hover:bg-surface2 hover:text-white'}`}><span>{command.label}</span><kbd className="ml-4 min-w-14 rounded-md border border-border bg-surface2 px-2 py-1 text-center text-[11px] font-medium text-muted">{command.shortcut}</kbd></button>)}
+        {!filteredCommands.length && <p className="p-3 text-sm text-muted">No matching commands.</p>}
+      </div>
+      <div className="flex items-center gap-3 border-t border-border px-4 py-2 text-[11px] text-muted"><span>↑↓ Navigate</span><span>Enter Select</span><span>Esc Close</span></div>
+    </div>
+  </div>
+}
 void Analytics
 
 function App() { return <ToastProvider><AppContent /></ToastProvider> }

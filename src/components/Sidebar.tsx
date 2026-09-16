@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Home,
@@ -35,11 +35,35 @@ export function Sidebar({
   onToggleTheme: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
+  const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function cancelExpansion() {
+    if (expandTimer.current) {
+      clearTimeout(expandTimer.current)
+      expandTimer.current = null
+    }
+  }
+
+  function handleMouseEnter() {
+    cancelExpansion()
+    expandTimer.current = setTimeout(() => setExpanded(true), 350)
+  }
+
+  function handleMouseLeave() {
+    cancelExpansion()
+    setExpanded(false)
+  }
+
+  function handleNavigate(next: Page) {
+    cancelExpansion()
+    setExpanded(false)
+    onNavigate(next)
+  }
 
   return (
     <motion.aside
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       animate={{ width: expanded ? 240 : 76 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="relative z-20 hidden shrink-0 flex-col overflow-hidden border-r border-border bg-surface md:flex"
@@ -65,7 +89,7 @@ export function Sidebar({
             <button
               key={item.id}
               title={expanded ? undefined : item.label}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => handleNavigate(item.id)}
               className={classNames(
                 'focus-ring flex items-center rounded-xl px-3 py-2.5 text-sm transition-[gap,justify-content] duration-200',
                 expanded ? 'gap-3' : 'justify-center',

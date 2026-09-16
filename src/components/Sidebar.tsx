@@ -44,11 +44,17 @@ export function Sidebar({
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="relative z-20 hidden shrink-0 flex-col overflow-hidden border-r border-border bg-surface md:flex"
     >
-      <div className="flex items-center gap-3 px-5 py-5">
+      <div className={classNames('flex items-center py-5 transition-[padding,gap] duration-200', expanded ? 'gap-3 px-5' : 'justify-center px-3')}>
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
           <GraduationCap size={18} />
         </div>
-        <span className="whitespace-nowrap text-lg font-semibold">Studia</span>
+        <motion.span
+          animate={{ opacity: expanded ? 1 : 0, width: expanded ? 'auto' : 0 }}
+          transition={{ duration: 0.15 }}
+          className="overflow-hidden whitespace-nowrap text-lg font-semibold"
+        >
+          Studia
+        </motion.span>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3">
@@ -61,12 +67,19 @@ export function Sidebar({
               title={expanded ? undefined : item.label}
               onClick={() => onNavigate(item.id)}
               className={classNames(
-                'focus-ring flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors',
+                'focus-ring flex items-center rounded-xl px-3 py-2.5 text-sm transition-[gap,justify-content] duration-200',
+                expanded ? 'gap-3' : 'justify-center',
                 active ? 'bg-accent/15 text-accent' : 'text-muted hover:bg-surface2 hover:text-white'
               )}
             >
               <Icon size={19} className="shrink-0" />
-              <span className="whitespace-nowrap">{item.label}</span>
+              <motion.span
+                animate={{ opacity: expanded ? 1 : 0, width: expanded ? 'auto' : 0 }}
+                transition={{ duration: 0.15 }}
+                className="overflow-hidden whitespace-nowrap"
+              >
+                {item.label}
+              </motion.span>
             </button>
           )
         })}
@@ -76,10 +89,19 @@ export function Sidebar({
         <button
           title={expanded ? undefined : 'Toggle theme'}
           onClick={onToggleTheme}
-          className="focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-surface2 hover:text-white"
+          className={classNames(
+            'focus-ring flex w-full items-center rounded-xl px-3 py-2.5 text-sm text-muted transition-[gap,justify-content] duration-200 hover:bg-surface2 hover:text-white',
+            expanded ? 'gap-3' : 'justify-center'
+          )}
         >
           {isDark ? <Moon size={19} className="shrink-0" /> : <Sun size={19} className="shrink-0" />}
-          <span className="whitespace-nowrap">{isDark ? 'Dark mode' : 'Light mode'}</span>
+          <motion.span
+            animate={{ opacity: expanded ? 1 : 0, width: expanded ? 'auto' : 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden whitespace-nowrap"
+          >
+            {isDark ? 'Dark mode' : 'Light mode'}
+          </motion.span>
         </button>
       </div>
     </motion.aside>

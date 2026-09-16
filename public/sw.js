@@ -9,6 +9,11 @@ self.addEventListener('activate', (event) => {
 })
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
+  const url = new URL(event.request.url)
+  if (url.pathname === '/index.html' || url.pathname === '/' || url.pathname.startsWith('/sw.js') || url.pathname.startsWith('/favicon') || url.pathname.startsWith('/apple-touch-icon') || url.pathname.startsWith('/icon-')) {
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request).then((cached) => cached || caches.match('/'))))
+    return
+  }
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
     const copy = response.clone()
     caches.open(CACHE).then((cache) => cache.put(event.request, copy))

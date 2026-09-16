@@ -103,6 +103,7 @@ export interface Settings {
   startPage: Page
   timeFormat: '12' | '24'
   weekStart: 'mon' | 'sun'
+  showNotesTab: boolean
 }
 
 export interface TimerState {
@@ -129,6 +130,7 @@ export const DEFAULT_SETTINGS: Settings = {
   startPage: 'dashboard',
   timeFormat: '24',
   weekStart: 'mon',
+  showNotesTab: true,
 }
 
 export const DEFAULT_TIMER_STATE: TimerState = {

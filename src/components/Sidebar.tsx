@@ -5,9 +5,7 @@ import {
   Clock,
   Calendar,
   BarChart3,
-  BookOpen,
   FileText,
-  Maximize2,
   Settings as SettingsIcon,
   Sun,
   Moon,
@@ -20,23 +18,27 @@ const NAV: { id: Page; label: string; icon: typeof Home }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'tasks', label: 'Tasks', icon: Clock },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'subjects', label: 'Subjects', icon: BookOpen },
   { id: 'notes', label: 'Notes', icon: FileText },
   { id: 'analytics', label: 'Statistics', icon: BarChart3 },
-  { id: 'focus', label: 'Focus', icon: Maximize2 },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ]
+
+function visibleNav(showNotes: boolean) {
+  return NAV.filter((item) => showNotes || item.id !== 'notes')
+}
 
 export function Sidebar({
   page,
   onNavigate,
   isDark,
   onToggleTheme,
+  showNotes = true,
 }: {
   page: Page
   onNavigate: (p: Page) => void
   isDark: boolean
   onToggleTheme: () => void
+  showNotes?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -50,7 +52,7 @@ export function Sidebar({
 
   function handleMouseEnter() {
     cancelExpansion()
-    expandTimer.current = setTimeout(() => setExpanded(true), 900)
+    expandTimer.current = setTimeout(() => setExpanded(true), 600)
   }
 
   function handleMouseLeave() {
@@ -86,7 +88,7 @@ export function Sidebar({
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3">
-        {NAV.map((item) => {
+        {visibleNav(showNotes).map((item) => {
           const Icon = item.icon
           const active = page === item.id
           return (
@@ -136,10 +138,10 @@ export function Sidebar({
   )
 }
 
-export function MobileNav({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {
+export function MobileNav({ page, onNavigate, showNotes = true }: { page: Page; onNavigate: (p: Page) => void; showNotes?: boolean }) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-start gap-1 overflow-x-auto border-t border-border bg-surface px-1 py-2 md:hidden">
-      {NAV.map((item) => {
+      {visibleNav(showNotes).map((item) => {
         const Icon = item.icon
         const active = page === item.id
         return (

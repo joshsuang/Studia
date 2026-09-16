@@ -18,6 +18,7 @@ export function StudyPlan({
   setTasks,
   goals,
   onStartTask,
+  onSubjectAutoAdd,
   title = "Today's Study Plan",
   scope = 'today',
   view = 'all',
@@ -26,6 +27,7 @@ export function StudyPlan({
   setTasks: (fn: (prev: Task[]) => Task[]) => void
   goals: Goal[]
   onStartTask?: (task: Task) => void
+  onSubjectAutoAdd?: (name: string) => void
   title?: string
   scope?: 'today' | 'all'
   view?: 'today' | 'upcoming' | 'completed' | 'all'
@@ -77,6 +79,7 @@ export function StudyPlan({
     scheduledTime: string
     goalId: string
   }) {
+    if (data.subject.trim()) onSubjectAutoAdd?.(data.subject)
     if (editing) {
       setTasks((prev) =>
         prev.map((t) =>

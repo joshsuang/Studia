@@ -1,5 +1,5 @@
-const CACHE = 'studia-shell-v1'
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/studia-icon.svg']
+const CACHE = 'studia-shell-v2'
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/studia-icon.svg', '/favicon-32.png', '/favicon-16.png', '/apple-touch-icon.png', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()))

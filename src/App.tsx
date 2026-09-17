@@ -1,9 +1,30 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { BarChart3, CalendarDays, Check, Clock3, Command, Edit3, Flame, Menu, Play, Plus, Search, Settings2, Target, Trash2, X } from 'lucide-react'
-import type { DailyGoal, Exam, Goal, NotificationSettings, Page, PlannedSession, PlannerSettings, Settings, StudyPlan2, StudySession, StudySettings, StudyTemplate, Subject, Task } from './types'
-import { DEFAULT_NOTIFICATION_SETTINGS, DEFAULT_PLANNER_SETTINGS, DEFAULT_SETTINGS, DEFAULT_STUDY_SETTINGS } from './types'
-import { useStored, resetAllData, uid } from './lib/storage'
+import type { DailyGoal, Exam, Goal, Page, PlannedSession, Settings, StudyPlan2, StudySession, StudyTemplate, Subject, Task } from './types'
+import { resetAllData, uid } from './lib/storage'
+import { AuthProvider, useAuth, signOut } from './lib/auth'
+import { AuthScreen } from './components/AuthScreen'
+import {
+  useTasks,
+  useSessions,
+  useGoals,
+  useSubjects,
+  useDailyGoal,
+  useExams,
+  usePlannedSessions,
+  useNotes,
+  useWeeklyGoal,
+  useTemplates,
+  useStudyPlans,
+  usePlannerSettings,
+  useNotificationSettings,
+  useStudySettings,
+  useActiveTemplateId,
+  useSettings,
+  resetCloudData,
+} from './lib/dataHooks'
+import { LogOut } from 'lucide-react'
 import { formatDate, formatMinutes, formatTimeOfDay, todayISO } from './lib/utils'
 import { useTimer } from './lib/useTimer'
 import { Sidebar, MobileNav } from './components/Sidebar'
@@ -17,7 +38,6 @@ import { SmartPlanner } from './components/SmartPlanner'
 import { defaultTemplateOrDefault } from './components/TemplatesManager'
 import type { Note } from './types'
 
-const DEFAULT_GOAL: DailyGoal = { minutes: 120, updatedAt: new Date().toISOString() }
 const COLORS = ['16 185 129', '56 189 248', '167 139 250', '251 146 60']
 
 function DEFAULT_TEMPLATES_SEED(): StudyTemplate[] {
@@ -31,22 +51,23 @@ function DEFAULT_TEMPLATES_SEED(): StudyTemplate[] {
 }
 
 function AppContent() {
-  const [settings, setSettings] = useStored<Settings>('settings', DEFAULT_SETTINGS)
-  const [tasks, setTasks] = useStored<Task[]>('tasks', [])
-  const [sessions, setSessions] = useStored<StudySession[]>('sessions', [])
-  const [goals, setGoals] = useStored<Goal[]>('goals', [])
-  const [subjects, setSubjects] = useStored<Subject[]>('subjects', [])
-  const [dailyGoal, setDailyGoal] = useStored<DailyGoal>('daily-goal', DEFAULT_GOAL)
-  const [exams, setExams] = useStored<Exam[]>('exams', [])
-  const [planned, setPlanned] = useStored<PlannedSession[]>('planned-sessions', [])
-  const [notes, setNotes] = useStored<Note[]>('notes', [])
-  const [weeklyGoal, setWeeklyGoal] = useStored<number>('weekly-goal', 600)
-  const [templates, setTemplates] = useStored<StudyTemplate[]>('templates', [])
-  const [plans, setPlans] = useStored<StudyPlan2[]>('study-plans', [])
-  const [plannerSettings, setPlannerSettings] = useStored<PlannerSettings>('planner-settings', DEFAULT_PLANNER_SETTINGS)
-  const [notificationSettings, setNotificationSettings] = useStored<NotificationSettings>('notification-settings', DEFAULT_NOTIFICATION_SETTINGS)
-  const [studySettings, setStudySettings] = useStored<StudySettings>('study-settings', DEFAULT_STUDY_SETTINGS)
-  const [activeTemplateId, setActiveTemplateId] = useStored<string>('active-template', '')
+  const { user } = useAuth()
+  const [settings, setSettings] = useSettings()
+  const [tasks, setTasks] = useTasks()
+  const [sessions, setSessions] = useSessions()
+  const [goals, setGoals] = useGoals()
+  const [subjects, setSubjects] = useSubjects()
+  const [dailyGoal, setDailyGoal] = useDailyGoal()
+  const [exams, setExams] = useExams()
+  const [planned, setPlanned] = usePlannedSessions()
+  const [notes, setNotes] = useNotes()
+  const [weeklyGoal, setWeeklyGoal] = useWeeklyGoal()
+  const [templates, setTemplates] = useTemplates()
+  const [plans, setPlans] = useStudyPlans()
+  const [plannerSettings, setPlannerSettings] = usePlannerSettings()
+  const [notificationSettings, setNotificationSettings] = useNotificationSettings()
+  const [studySettings, setStudySettings] = useStudySettings()
+  const [activeTemplateId, setActiveTemplateId] = useActiveTemplateId()
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [page, setPage] = useState<Page>(settings.startPage)
   const [subjectId, setSubjectId] = useState('')
@@ -109,9 +130,9 @@ function AppContent() {
   void setWeeklyGoal
   return <div className={`${themeClass} ${settings.layout} min-h-screen bg-bg text-white`}>
     <div className="flex min-h-screen"><Sidebar page={page} onNavigate={navigate} isDark={themeClass === 'dark'} onToggleTheme={toggleTheme} showNotes={settings.showNotesTab} />
-      <main className="min-w-0 flex-1 pb-20 md:pb-0"><header className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-6 lg:px-10"><div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} className="focus-ring rounded-lg p-2 text-muted hover:bg-surface2 md:hidden" aria-label="Open navigation"><Menu size={20} /></button><div><p className="text-xs font-medium uppercase tracking-[0.16em] text-accent">Studia</p><h1 className="mt-0.5 text-lg font-semibold sm:text-xl">{pageTitle(page)}</h1></div></div><button onClick={() => setPalette(true)} className="focus-ring hidden items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs text-muted hover:bg-surface2 sm:flex"><Command size={14} /> Search <kbd className="rounded bg-surface2 px-1.5 py-0.5">⌘K</kbd></button><div className="hidden items-center gap-2 text-sm text-muted lg:flex"><CalendarDays size={16} /> {formatDate(new Date())}</div></header>
+      <main className="min-w-0 flex-1 pb-20 md:pb-0"><header className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-6 lg:px-10"><div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} className="focus-ring rounded-lg p-2 text-muted hover:bg-surface2 md:hidden" aria-label="Open navigation"><Menu size={20} /></button><div><p className="text-xs font-medium uppercase tracking-[0.16em] text-accent">Studia</p><h1 className="mt-0.5 text-lg font-semibold sm:text-xl">{pageTitle(page)}</h1></div></div><button onClick={() => setPalette(true)} className="focus-ring hidden items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs text-muted hover:bg-surface2 sm:flex"><Command size={14} /> Search <kbd className="rounded bg-surface2 px-1.5 py-0.5">⌘K</kbd></button><div className="hidden items-center gap-2 text-sm text-muted lg:flex"><CalendarDays size={16} /> {formatDate(new Date())}</div><button onClick={() => signOut()} title={user?.email ? `Signed in as ${user.email}` : 'Sign out'} className="focus-ring flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs text-muted hover:bg-surface2"><LogOut size={14} /><span className="hidden sm:inline">Sign out</span></button></header>
         {mobileOpen && <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setMobileOpen(false)}><div className="h-full w-72 border-r border-border bg-surface p-4" onClick={(e) => e.stopPropagation()}><div className="mb-6 flex items-center justify-between"><span className="text-lg font-semibold">Studia</span><button onClick={() => setMobileOpen(false)} className="text-muted"><X size={20} /></button></div><MobileDrawer page={page} navigate={navigate} showNotes={settings.showNotesTab} /></div></div>}
-        <div className="mx-auto max-w-[1500px] p-4 sm:p-6 lg:p-10">{page === 'dashboard' && <Dashboard timer={timer} tasks={tasks} setTasks={setTasks} goals={goals} sessions={sessions} subjects={subjects} subjectId={subjectId} setSubjectId={setSubjectId} addSubject={addSubject} dailyGoal={dailyGoal} setDailyGoal={setDailyGoal} exams={exams} planned={planned} navigate={navigate} openFocus={() => setPage('focus')} activeTemplate={activeTemplate} templates={templates} onTemplateChange={(id) => { setActiveTemplateId(id); timer.reset() }} plans={plans} onStartPlanSession={startPlannedSession} />}{page === 'tasks' && <TasksPage tasks={tasks} setTasks={setTasks} goals={goals} onStartTask={(task) => { setActiveTask(task); setPage('focus'); timer.startFreshFocus() }} onSubjectAutoAdd={autoAddSubject} />}{page === 'sessions' && <Sessions sessions={sessions} />}{page === 'planner' && <SmartPlanner plans={plans} setPlans={setPlans} subjects={subjects} tasks={tasks} settings={plannerSettings} template={activeTemplate} onStartSession={startPlannedSession} />}{page === 'calendar' && <><CalendarPage tasks={tasks} sessions={sessions} exams={exams} planned={planned} subjects={subjects} /><div className="mt-5"><Planner tasks={tasks} subjects={subjects} exams={exams} setExams={setExams} planned={planned} setPlanned={setPlanned} /></div></>}{page === 'notes' && <NotesPage notes={notes} setNotes={setNotes} subjects={subjects} />}{page === 'analytics' && <StatisticsPage sessions={sessions} tasks={tasks} subjects={subjects} dailyGoal={dailyGoal.minutes} weeklyGoal={weeklyGoal} />}{page === 'goals' && <Goals goals={goals} setGoals={setGoals} />}{page === 'settings' && <SettingsSections settings={settings} setSettings={setSettings} study={studySettings} setStudy={setStudySettings} plannerSettings={plannerSettings} setPlannerSettings={setPlannerSettings} notifications={notificationSettings} setNotifications={setNotificationSettings} templates={templates} setTemplates={setTemplates} subjects={subjects} setSubjects={setSubjects} sessions={sessions} tasks={tasks} onReset={() => { resetAllData(); window.location.reload() }} />}</div></main></div><MobileNav page={page} onNavigate={navigate} showNotes={settings.showNotesTab} />{palette && <CommandPalette timer={timer} navigate={navigate} close={() => setPalette(false)} addSubject={addSubject} />}{page === 'focus' && <FocusMode timer={timer} task={activeTask} tasks={tasks} subject={currentSubject?.name || activeTask?.subject || ''} todayMinutes={sessions.filter((session) => session.type === 'focus' && session.completedAt.slice(0, 10) === todayISO()).reduce((sum, session) => sum + session.durationMinutes, 0)} dailyGoal={dailyGoal.minutes} onTaskChange={(task) => { setActiveTask(task); const matching = task && subjects.find((item) => item.name === task.subject); if (matching) setSubjectId(matching.id) }} onExit={() => setPage('dashboard')} />}</div>
+        <div className="mx-auto max-w-[1500px] p-4 sm:p-6 lg:p-10">{page === 'dashboard' && <Dashboard timer={timer} tasks={tasks} setTasks={setTasks} goals={goals} sessions={sessions} subjects={subjects} subjectId={subjectId} setSubjectId={setSubjectId} addSubject={addSubject} dailyGoal={dailyGoal} setDailyGoal={setDailyGoal} exams={exams} planned={planned} navigate={navigate} openFocus={() => setPage('focus')} activeTemplate={activeTemplate} templates={templates} onTemplateChange={(id) => { setActiveTemplateId(id); timer.reset() }} plans={plans} onStartPlanSession={startPlannedSession} />}{page === 'tasks' && <TasksPage tasks={tasks} setTasks={setTasks} goals={goals} onStartTask={(task) => { setActiveTask(task); setPage('focus'); timer.startFreshFocus() }} onSubjectAutoAdd={autoAddSubject} />}{page === 'sessions' && <Sessions sessions={sessions} />}{page === 'planner' && <SmartPlanner plans={plans} setPlans={setPlans} subjects={subjects} tasks={tasks} settings={plannerSettings} template={activeTemplate} onStartSession={startPlannedSession} />}{page === 'calendar' && <><CalendarPage tasks={tasks} sessions={sessions} exams={exams} planned={planned} subjects={subjects} /><div className="mt-5"><Planner tasks={tasks} subjects={subjects} exams={exams} setExams={setExams} planned={planned} setPlanned={setPlanned} /></div></>}{page === 'notes' && <NotesPage notes={notes} setNotes={setNotes} subjects={subjects} />}{page === 'analytics' && <StatisticsPage sessions={sessions} tasks={tasks} subjects={subjects} dailyGoal={dailyGoal.minutes} weeklyGoal={weeklyGoal} />}{page === 'goals' && <Goals goals={goals} setGoals={setGoals} />}{page === 'settings' && <SettingsSections settings={settings} setSettings={setSettings} study={studySettings} setStudy={setStudySettings} plannerSettings={plannerSettings} setPlannerSettings={setPlannerSettings} notifications={notificationSettings} setNotifications={setNotificationSettings} templates={templates} setTemplates={setTemplates} subjects={subjects} setSubjects={setSubjects} sessions={sessions} tasks={tasks} onReset={() => { if (user) resetCloudData(user.id); resetAllData(); window.location.reload() }} />}</div></main></div><MobileNav page={page} onNavigate={navigate} showNotes={settings.showNotesTab} />{palette && <CommandPalette timer={timer} navigate={navigate} close={() => setPalette(false)} addSubject={addSubject} />}{page === 'focus' && <FocusMode timer={timer} task={activeTask} tasks={tasks} subject={currentSubject?.name || activeTask?.subject || ''} todayMinutes={sessions.filter((session) => session.type === 'focus' && session.completedAt.slice(0, 10) === todayISO()).reduce((sum, session) => sum + session.durationMinutes, 0)} dailyGoal={dailyGoal.minutes} onTaskChange={(task) => { setActiveTask(task); const matching = task && subjects.find((item) => item.name === task.subject); if (matching) setSubjectId(matching.id) }} onExit={() => setPage('dashboard')} />}</div>
 }
 
 function pageTitle(page: Page) { return ({ dashboard: 'Good afternoon', tasks: 'Tasks', sessions: 'Session history', calendar: 'Calendar', subjects: 'Subjects', notes: 'Notes', analytics: 'Statistics', focus: 'Focus mode', goals: 'Goals', planner: 'Smart Study Planner', settings: 'Settings' })[page] }
@@ -195,5 +216,24 @@ function CommandPalette({ timer, navigate, close, addSubject }: { timer: ReturnT
 }
 void Analytics
 
-function App() { return <ToastProvider><AppContent /></ToastProvider> }
+function Gate() {
+  const { session, loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="dark flex min-h-screen items-center justify-center bg-bg text-sm text-muted">Loading Studia…</div>
+    )
+  }
+  if (!session) return <AuthScreen />
+  return <AppContent />
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <Gate />
+      </ToastProvider>
+    </AuthProvider>
+  )
+}
 export default App
